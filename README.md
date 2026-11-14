@@ -1,0 +1,2 @@
+# smellme
+Monolathic application
