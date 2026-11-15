@@ -1,0 +1,23 @@
+# Local Postgres for development and the e2e tests:  docker compose -f docker-compose.dev.yml up -d
+# Matches environments/.env.dev (database smellme_dev) and the e2e tests (database smellme_test, created on demand).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: smellme_pg_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smellme
+      POSTGRES_PASSWORD: smellme_dev
+      POSTGRES_DB: smellme_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - smellme_pg_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U smellme -d smellme_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  smellme_pg_dev:

@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+
+# build output (API -> dist/, storefront + admin -> public/)
+dist/
+public/web/
+public/admin/
+*.tsbuildinfo
+coverage/
+
+# secrets and local config (only the *.example files are committed)
+.env
+.env.*
+!.env.example
+environments/.env
+environments/.env.*
+!environments/.env.example
+deploy/.env
+
+# logs and process manager
+*.log
+npm-debug.log*
+/logs/
+.pm2/
+
+# local databases / temp / uploads
+*.sqlite
+*.sqlite3
+*.tmp
+/tmp/
+/temp/
+
+# editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

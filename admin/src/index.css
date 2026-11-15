@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
+  body { @apply bg-ivory font-sans text-ink antialiased; }
+  :focus-visible { outline: 2px solid #8A6630; outline-offset: 2px; }
+  button, input, select, textarea { font: inherit; }
+}
+
+@layer components {
+  .btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 text-[13px] font-medium uppercase tracking-[0.14em] transition disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-ink text-ivory hover:bg-ink/90; }
+  .btn-secondary { @apply btn border border-ink text-ink hover:bg-pearl; }
+  .field { @apply min-h-12 w-full rounded border border-field bg-white px-4 text-[15px] placeholder:text-taupe/60; }
+  .label { @apply mb-2 block text-sm font-medium; }
+  .eyebrow { @apply text-xs font-medium uppercase tracking-[0.22em] text-antique; }
+}

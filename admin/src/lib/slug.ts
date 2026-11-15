@@ -1,0 +1,12 @@
+// Mirrors api/src/common/utils/slug.ts so the preview matches what the server will generate.
+export function slugify(input: string, max = 120): string {
+  return input
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, max)
+    .replace(/-+$/g, '');
+}
