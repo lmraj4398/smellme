@@ -4,7 +4,7 @@ import { AuthedAdmin, CurrentAdmin } from '../../common/decorators/current-user.
 import { PlainResponse } from '../../common/decorators/plain-response.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Screen } from '../../common/decorators/screen.decorator';
-import { StorageService } from '../../common/storage/storage.service';
+import { R2Service } from '../../common/r2/r2.service';
 import {
   AdjustStockDto, AdminProductsQuery, BrandDto, FamilyDto, InventoryQuery, NoteDto, PresignDto, ProductDto, PublicProductsQuery,
 } from './dto/catalog.dto';
@@ -94,11 +94,11 @@ export class InventoryController {
 @ApiBearerAuth()
 @Controller('admin/uploads')
 export class UploadsController {
-  constructor(private readonly storage: StorageService) {}
+  constructor(private readonly r2: R2Service) {}
 
   // The browser then PUTs the file straight to R2; the API never handles the bytes.
   @Post('presign') @HttpCode(200)
   presign(@Body() dto: PresignDto) {
-    return this.storage.presignImageUpload(dto.content_type, dto.size);
+    return this.r2.presignUpload('media', dto.content_type, dto.size);
   }
 }

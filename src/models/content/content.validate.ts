@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { MEDIA_KEY } from '../../common/storage/storage.service';
+import { MEDIA_KEY } from '../../common/r2/r2.folders';
 import type { Field, SectionSpec } from './content.types';
 
 const DEFAULT_MAX = { text: 200, textarea: 2000 } as const;

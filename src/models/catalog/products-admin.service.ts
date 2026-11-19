@@ -3,7 +3,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository } from 'typeorm';
 import { rethrowDbError } from '../../common/utils/db-error';
 import { slugify } from '../../common/utils/slug';
-import { StorageService } from '../../common/storage/storage.service';
+import { R2Service } from '../../common/r2/r2.service';
 import { AdminProductsQuery, ProductDto, VariantDto } from './dto/catalog.dto';
 import { Product, ProductMedia, ProductNote, ProductVariant } from './entities/product.entities';
 import { Brand, Note, ScentFamily } from './entities/taxonomy.entities';
@@ -22,7 +22,7 @@ export class ProductsAdminService {
     @InjectDataSource() private readonly ds: DataSource,
     @InjectRepository(Product) private readonly products: Repository<Product>,
     private readonly stock: StockService,
-    private readonly storage: StorageService,
+    private readonly r2: R2Service,
   ) {}
 
   async list(q: AdminProductsQuery) {
@@ -72,7 +72,7 @@ export class ProductsAdminService {
       ...p,
       variants: [...p.variants].sort((a, b) => a.sort_order - b.sort_order || a.size_ml - b.size_ml),
       notes: [...p.notes].sort((a, b) => a.sort_order - b.sort_order),
-      media: [...p.media].sort((a, b) => a.sort_order - b.sort_order).map((m) => ({ ...m, url: this.storage.publicUrl(m.key) })),
+      media: [...p.media].sort((a, b) => a.sort_order - b.sort_order).map((m) => ({ ...m, url: this.r2.publicUrl(m.key) })),
     };
   }
 
@@ -103,7 +103,7 @@ export class ProductsAdminService {
         return this.writeChildren(m, product, dto, adminId, false);
       });
       // After commit, best-effort: a failed R2 delete must never fail a saved product.
-      await Promise.allSettled(dropped.map((k) => this.storage.deleteObject(k)));
+      await Promise.allSettled(dropped.map((k) => this.r2.delete('media', k)));
       return await this.get(id);
     } catch (e) {
       rethrowDbError(e, 'A product or SKU with this name');

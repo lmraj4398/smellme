@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { StorageService } from '../../common/storage/storage.service';
+import { R2Service } from '../../common/r2/r2.service';
 import { PublicProductsQuery } from './dto/catalog.dto';
 import { Concentration, Product, ProductVariant } from './entities/product.entities';
 
@@ -29,7 +29,7 @@ type Loaded = Product & { variants: ProductVariant[] };
 export class ProductsPublicService {
   constructor(
     @InjectRepository(Product) private readonly products: Repository<Product>,
-    private readonly storage: StorageService,
+    private readonly r2: R2Service,
   ) {}
 
   // Only what a shopper may see: active product, brand and family, with something to buy.
@@ -126,7 +126,7 @@ export class ProductsPublicService {
       })),
       notes: tiers,
       meters,
-      media: [...p.media].sort((a, b) => a.sort_order - b.sort_order).map((m) => ({ url: this.storage.publicUrl(m.key), alt: m.alt })),
+      media: [...p.media].sort((a, b) => a.sort_order - b.sort_order).map((m) => ({ url: this.r2.publicUrl(m.key), alt: m.alt })),
       related,
     };
   }
@@ -233,7 +233,7 @@ export class ProductsPublicService {
       tint: p.tint,
       liquid: p.liquid,
       mono: p.mono,
-      image: first ? this.storage.publicUrl(first.key) : null,
+      image: first ? this.r2.publicUrl(first.key) : null,
     };
   }
 }

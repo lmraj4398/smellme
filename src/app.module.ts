@@ -4,6 +4,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { validationSchema } from './config/env.validation';
+import { R2Module } from './common/r2/r2.module';
 import { ApiErrorLogsModule } from './common/api-error-logs/api-error-logs.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { EncryptResponseInterceptor } from './common/interceptors/encrypt-response.interceptor';
@@ -43,6 +44,7 @@ import { AdminAuthGuard } from './security/guards/admin-auth.guard';
       }),
     }),
     ScheduleModule.forRoot(),
+    R2Module,
     ApiErrorLogsModule,
     AuthModule,
     AdminUsersModule,

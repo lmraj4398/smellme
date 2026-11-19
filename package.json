@@ -15,6 +15,7 @@
     "migration:revert": "npm run typeorm migration:revert -- -d src/data-source.ts",
     "seed:owner": "dotenv -e ./environments/.env.dev -- ts-node -r tsconfig-paths/register src/seeds/owner.seed.ts",
     "seed:catalog": "dotenv -e ./environments/.env.dev -- ts-node -r tsconfig-paths/register src/seeds/catalog.seed.ts",
+    "r2:check": "dotenv -e ./environments/.env.dev -- ts-node -r tsconfig-paths/register src/seeds/r2-check.ts",
     "db:sql": "ts-node -r tsconfig-paths/register src/db/build-schema-sql.ts",
     "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "test": "jest",

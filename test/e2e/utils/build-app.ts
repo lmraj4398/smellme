@@ -8,7 +8,8 @@ import { AppModule } from '../../../src/app.module';
 import { configureApp } from '../../../src/app.setup';
 import { ConfigService } from '@nestjs/config';
 import { AdminUser } from '../../../src/models/admin-users/admin-user.entity';
-import { StorageService } from '../../../src/common/storage/storage.service';
+import { R2Service } from '../../../src/common/r2/r2.service';
+import type { R2Folder } from '../../../src/common/r2/r2.folders';
 import { WHATSAPP_PROVIDER, type OutboundMessage, type SendResult, type WhatsAppProvider } from '../../../src/models/whatsapp/whatsapp.provider';
 
 /** Records every WhatsApp message instead of sending it, so tests can read OTPs and notifications. */
@@ -28,14 +29,14 @@ export class RecordingWhatsApp implements WhatsAppProvider {
 }
 
 /** Real signing logic, but deletes are recorded instead of sent to R2. */
-export class TestStorage extends StorageService {
+export class TestStorage extends R2Service {
   deleted: string[] = [];
   /** Objects a test has "uploaded" to the private bucket (key -> what HEAD would report). */
   uploads = new Map<string, { size: number; contentType: string }>();
-  async deleteObject(key: string) {
+  async delete(_folder: R2Folder, key: string) {
     this.deleted.push(key);
   }
-  async headReceipt(key: string) {
+  async head(_folder: R2Folder, key: string) {
     return this.uploads.get(key) ?? null;
   }
   /** Pretend the browser PUT a file to the signed URL. */
@@ -81,7 +82,7 @@ export async function buildApp(extraControllers: Type<unknown>[] = []): Promise<
   const mod = await Test.createTestingModule({ imports: [AppModule], controllers: extraControllers })
     .overrideProvider(WHATSAPP_PROVIDER)
     .useValue(wa)
-    .overrideProvider(StorageService)
+    .overrideProvider(R2Service)
     .useFactory({ factory: (c: ConfigService) => new TestStorage(c), inject: [ConfigService] })
     .compile();
   const app = mod.createNestApplication();
@@ -93,7 +94,7 @@ export async function buildApp(extraControllers: Type<unknown>[] = []): Promise<
   const db = app.get(DataSource);
   await resetTables(db);
 
-  return { app, http: request(app.getHttpServer()), db, storage: app.get(StorageService) as TestStorage, wa, close: () => app.close() };
+  return { app, http: request(app.getHttpServer()), db, storage: app.get(R2Service) as TestStorage, wa, close: () => app.close() };
 }
 
 const TABLES =

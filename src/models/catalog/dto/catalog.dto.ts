@@ -5,7 +5,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CONCENTRATIONS, GENDERS, NOTE_TIERS, STOCK_REASONS } from '../entities/product.entities';
-import { MEDIA_KEY } from '../../../common/storage/storage.service';
+import { MEDIA_KEY } from '../../../common/r2/r2.folders';
 
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

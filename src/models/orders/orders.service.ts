@@ -2,7 +2,8 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, QueryFailedError, Repository } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { receiptKeyPattern, RECEIPT_MAX_BYTES, RECEIPT_TYPES, StorageService } from '../../common/storage/storage.service';
+import { R2_FOLDERS } from '../../common/r2/r2.folders';
+import { R2Service } from '../../common/r2/r2.service';
 import { normalizeIndianMobile } from '../../common/utils/phone';
 import { StockService } from '../catalog/stock.service';
 import { CouponsService } from '../coupons/coupons.service';
@@ -31,7 +32,7 @@ export class OrdersService {
     private readonly stock: StockService,
     private readonly coupons: CouponsService,
     private readonly settings: SettingsService,
-    private readonly storage: StorageService,
+    private readonly r2: R2Service,
     private readonly whatsapp: WhatsAppService,
   ) {}
 
@@ -161,18 +162,18 @@ export class OrdersService {
   async presignReceipt(customerId: string, orderNo: string, dto: PresignReceiptDto) {
     const o = await this.findMine(customerId, orderNo);
     if (o.status !== 'PENDING_PAYMENT') throw new ConflictException('This order isn’t waiting for a payment receipt');
-    return this.storage.presignReceiptUpload(o.id, dto.content_type, dto.size);
+    return this.r2.presignUpload('receipts', dto.content_type, dto.size, o.id);
   }
 
   async submitReceipt(customerId: string, orderNo: string, dto: SubmitReceiptDto) {
     const o = await this.findMine(customerId, orderNo);
     if (o.status !== 'PENDING_PAYMENT') throw new ConflictException('This order isn’t waiting for a payment receipt');
     // The key must be one issued for THIS order. Pointing at another order's receipt (or any other object) fails here.
-    if (!receiptKeyPattern(o.id).test(dto.key)) throw new BadRequestException('That receipt doesn’t belong to this order');
-    const head = await this.storage.headReceipt(dto.key);
+    if (!this.r2.isValidKey('receipts', dto.key, o.id)) throw new BadRequestException('That receipt doesn’t belong to this order');
+    const head = await this.r2.head('receipts', dto.key);
     if (!head) throw new BadRequestException('We couldn’t find your upload. Please upload the receipt again.');
     const ext = dto.key.split('.').pop()!;
-    if (head.size <= 0 || head.size > RECEIPT_MAX_BYTES || RECEIPT_TYPES[head.contentType] !== ext) {
+    if (head.size <= 0 || head.size > R2_FOLDERS.receipts.maxBytes || (R2_FOLDERS.receipts.types as Record<string, string>)[head.contentType] !== ext) {
       throw new BadRequestException('The uploaded file isn’t a valid receipt (JPEG, PNG, WebP or PDF up to 5 MB)');
     }
 

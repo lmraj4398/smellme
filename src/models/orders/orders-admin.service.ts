@@ -2,7 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { StorageService } from '../../common/storage/storage.service';
+import { R2Service } from '../../common/r2/r2.service';
 import { Customer } from '../customers/customer.entities';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { Order, OrderEvent, OrderItem } from './order.entities';
@@ -20,7 +20,7 @@ export class OrdersAdminService {
     @InjectRepository(OrderEvent) private readonly events: Repository<OrderEvent>,
     @InjectRepository(Customer) private readonly customers: Repository<Customer>,
     private readonly customerOrders: OrdersService,
-    private readonly storage: StorageService,
+    private readonly r2: R2Service,
     private readonly whatsapp: WhatsAppService,
   ) {}
 
@@ -110,7 +110,7 @@ export class OrdersAdminService {
     const o = await this.orders.findOne({ where: { id }, select: { id: true, receipt_key: true } });
     if (!o) throw new NotFoundException('Order not found');
     if (!o.receipt_key) throw new NotFoundException('No receipt uploaded');
-    return { url: await this.storage.signedReceiptUrl(o.receipt_key, 300), expires_in: 300, is_pdf: o.receipt_key.endsWith('.pdf') };
+    return { url: await this.r2.signedGetUrl('receipts', o.receipt_key, 300), expires_in: 300, is_pdf: o.receipt_key.endsWith('.pdf') };
   }
 
   // ── payment verification ──────────────────────────────────────────────────

@@ -51,6 +51,9 @@ npm run dev:admin                                   # admin with hot reload:    
 Or run it as one app, the way production does: `npm run build && npm run start:prod`, then open
 `http://localhost:<PORT>/` (site) and `/admin`.
 
+**Demo catalog as plain SQL:** `db-scripts/catalog-seed.sql` is the same data as `seed:catalog` (safe to run twice):
+`psql "postgresql://USER:PASSWORD@HOST:5432/DBNAME" -v ON_ERROR_STOP=1 -f db-scripts/catalog-seed.sql`.
+
 **Sample admin logins (dev only):** `db-scripts/sample-admin-users.sql` inserts an owner and three limited logins (orders,
 catalog, support). The emails, passwords and what each can open are listed at the top of the file. Run it with `psql -f`
 once the tables exist. Never run it on the live shop: the passwords are public.
@@ -100,7 +103,7 @@ With `DB_MIGRATIONS_RUN=true` the API applies pending migrations when it starts.
 
 Every setting is documented in `environments/.env.example` and validated at start-up in `src/config/env.validation.ts`.
 The ones you must set for production: the database, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `API_ENCRYPTION_KEY`
-(must equal `VITE_API_ENCRYPTION_KEY` in both frontends), the public URLs, R2 storage, UPI details and the Gupshup
+(must equal `VITE_API_ENCRYPTION_KEY` in both frontends), the public URLs, R2 storage ([docs/R2.md](docs/R2.md)), UPI details and the Gupshup
 keys and templates (see [docs/WHATSAPP.md](docs/WHATSAPP.md)).
 
 ## Deploying

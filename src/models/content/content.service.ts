@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { StorageService } from '../../common/storage/storage.service';
+import { R2Service } from '../../common/r2/r2.service';
 import { CONTENT_PAGES, findPage, findSection } from './content.pages';
 import type { Field } from './content.types';
 import { imageKeys, mergeDefaults, resolveImages, validateSection } from './content.validate';
@@ -12,7 +12,7 @@ import { SiteContent } from './site-content.entity';
 export class ContentService {
   constructor(
     @InjectRepository(SiteContent) private readonly repo: Repository<SiteContent>,
-    private readonly storage: StorageService,
+    private readonly r2: R2Service,
   ) {}
 
   /** What the website renders: defaults overlaid with saved edits, image keys turned into URLs. */
@@ -21,7 +21,7 @@ export class ContentService {
     if (!spec) throw new NotFoundException('Page not found');
     const rows = new Map((await this.repo.find({ where: { page } })).map((r) => [r.section, r]));
     const sections = Object.fromEntries(
-      spec.sections.map((s) => [s.key, resolveImages(s.fields, mergeDefaults(s, rows.get(s.key)?.data), (k) => this.storage.publicUrl(k))]),
+      spec.sections.map((s) => [s.key, resolveImages(s.fields, mergeDefaults(s, rows.get(s.key)?.data), (k) => this.r2.publicUrl(k))]),
     );
     return { page, sections };
   }
@@ -44,7 +44,7 @@ export class ContentService {
   /** Field definitions for the editor to build its forms from (defaults are not needed there). */
   schema() {
     return {
-      media_base: this.storage.publicUrl('').replace(/\/$/, ''),
+      media_base: this.r2.publicUrl('').replace(/\/$/, ''),
       pages: CONTENT_PAGES.map((p) => ({
         key: p.key,
         title: p.title,
@@ -80,6 +80,6 @@ export class ContentService {
   private async dropOrphans(fields: Field[], before: Record<string, unknown>, after: Record<string, unknown>) {
     const keep = new Set(imageKeys(fields, after));
     const gone = imageKeys(fields, before).filter((k) => !keep.has(k));
-    await Promise.allSettled(gone.map((k) => this.storage.deleteObject(k)));
+    await Promise.allSettled(gone.map((k) => this.r2.delete('media', k)));
   }
 }
